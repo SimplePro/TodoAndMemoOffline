@@ -6,7 +6,7 @@ import androidx.room.Query
 import com.simplepro.secondtodoandmemo.instance.TodoInstance
 
 @Dao
-interface TodoDao {//
+interface TodoDao {
     @Query("SELECT * FROM todo")
     fun getAll() : List<TodoInstance>
 

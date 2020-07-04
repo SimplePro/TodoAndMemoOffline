@@ -7,7 +7,6 @@ import com.simplepro.secondtodoandmemo.instance.MemoInstance
 
 @Dao
 interface MemoDao {
-    //
     @Query("SELECT * FROM memo")
     fun getAll() : List<MemoInstance>
 
