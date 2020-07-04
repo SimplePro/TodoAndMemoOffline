@@ -1,3 +1,13 @@
 package com.simplepro.secondtodoandmemo.instance
 
-data class MemoInstance(val memoTitle: String = "", val memoContent: String = "", val memoCalendar: String = "", val memoPlan: String = "", val memoId : String = "")
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "memo")
+data class MemoInstance(
+    @ColumnInfo(name = "memoTitle") val memoTitle: String = "",
+    @ColumnInfo(name = "memoContent") val memoContent: String = "",
+    @ColumnInfo(name = "memoCalendar") val memoCalendar: String = "",
+    @ColumnInfo(name = "memoPlan") val memoPlan: String = "",
+    @PrimaryKey val memoId : String = "")

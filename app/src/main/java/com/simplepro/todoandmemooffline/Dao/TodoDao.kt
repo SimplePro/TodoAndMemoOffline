@@ -8,7 +8,7 @@ import com.simplepro.secondtodoandmemo.instance.TodoInstance
 @Dao
 interface TodoDao {
     @Query("SELECT * FROM todo")
-    fun getAll() : ArrayList<TodoInstance>
+    fun getAll() : List<TodoInstance>
 
     @Insert
     fun insert(todo : TodoInstance)

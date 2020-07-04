@@ -17,11 +17,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
 import com.simplepro.secondtodoandmemo.adapter.MemoRecyclerViewAdapter
 import com.simplepro.secondtodoandmemo.adapter.MemoTodoRecyclerViewAdapter
 import com.simplepro.secondtodoandmemo.adapter.TodoRecyclerViewAdapter
 import com.simplepro.secondtodoandmemo.instance.MemoInstance
 import com.simplepro.secondtodoandmemo.instance.TodoInstance
+import com.simplepro.todoandmemooffline.DB.MemoDB
+import com.simplepro.todoandmemooffline.DB.TodoDB
 import com.simplepro.todoandmemooffline.R
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
@@ -90,6 +93,10 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
     lateinit var memoId: String
     var memoIdBoolean : Boolean = false
 
+    lateinit var todoDB : TodoDB
+    lateinit var memoDB : MemoDB
+//    lateinit var doneTodoDB
+
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,9 +114,20 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         InLeftSlideAnimation = AnimationUtils.loadAnimation(this,  R.anim.in_left_slide_animation)
 
         memoTodoAdapter = MemoTodoRecyclerViewAdapter(DoneTodoList, this, this)
-        memoAdapter = MemoRecyclerViewAdapter(memoList as ArrayList<MemoInstance>, memoSearchList,this)
-        todoAdapter = TodoRecyclerViewAdapter(todoList as ArrayList<TodoInstance>, DoneTodoList as ArrayList<TodoInstance>,this, todoSearchList)
+        memoAdapter = MemoRecyclerViewAdapter(memoList, memoSearchList,this)
+        todoAdapter = TodoRecyclerViewAdapter(todoList, DoneTodoList,this, todoSearchList)
 
+        todoDB = Room.databaseBuilder(
+                applicationContext,
+        TodoDB::class.java, "todo.db"
+        ).allowMainThreadQueries()
+        .build()
+
+        memoDB = Room.databaseBuilder(
+            applicationContext,
+            MemoDB::class.java, "memo.db"
+        ).allowMainThreadQueries()
+            .build()
 
         //리사이클러뷰와 어답터를 연결해주는 메소드를 호출함.
         bridgeRecyclerViewAndAdapter()
@@ -150,6 +168,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
+    //todoItem 이 remove 되었을 때 todoLottieAnimation 의 visibility 를 조정하는 콜백 메소드
     override fun todoOnItemClick(view: View, position: Int) {
         Log.d("TAG", "MainActivity.todoOnItemClick - todoOnItemClick")
         loadTodoIdData()
@@ -181,6 +200,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
+    //todoItem 들의 정보를 수정해주는 콜백 메소드.
     override fun todoOnItemReplaceClick(view: View, position: Int) {
         val dialog = AlertDialog.Builder(this)
         val edialog: LayoutInflater = LayoutInflater.from(this)
@@ -253,6 +273,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
+    //memoItem 이 remove 되었을 때 memoLottieAnimation 의 visibility 를 조정하는 콜백 메소드
     override fun memoOnItemClick(view: View, position: Int) {
         Log.d("TAG", "MainActivity.memoOnItemClick - memoOnItemClick")
         loadMemoIdData()
@@ -284,6 +305,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
+    //memoItem 들의 정보를 수정해주는 콜백 메소드
     override fun memoItemReplaceClick(view: View, position: Int) {
         //변수 선언
         memoDialog = AlertDialog.Builder(this)
@@ -417,6 +439,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
+    //memoPlanText 를 조정해주는 콜백 메소드
     override fun memoItemViewOnClick(view: View, position: Int) {
         memoListLayoutDialog.visibility = View.VISIBLE
         memoPlanConstraintLayoutDialog.visibility = View.GONE
@@ -517,7 +540,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         todoButton.setOnClickListener {
             Log.d("TAG", "MainActivity.todoDialogDeclaration - todoButton is pressed")
 
-            makeTodoIdAndSaveTodoDataInServer(todoText.text.toString(), contentText.text.toString(), todoBuilder)
+            makeTodoIdAndSaveTodoData(todoText.text.toString(), contentText.text.toString(), todoBuilder)
             //만일 todoList의 아이템을 추가했을 때 todoList 의 사이즈가 1이면 todoLottieAnimationVisibleForm 을 true 로 바꾸어 주어 LottieAnimation 의 Visible 을 조정해주어야 함.
             if (todoList.size == 1) {
                 todoLottieAnimationVisibleForm = true
@@ -573,7 +596,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         memoSaveButtonDialog.setOnClickListener {
             Log.d("TAG", "MainActivity.memoDialogDeclaration - memoButton is pressed")
             date_text = SimpleDateFormat("yyyy년 MM월 dd일 EE요일", Locale.getDefault()).format(currentTime)
-            makeMemoIdAndSaveMemoDataInServer(memoTitleTextDialog.text.toString(), memoContentTextDialog.text.toString(), date_text, memoPlanText, memoBuilder)
+            makeMemoIdAndSaveMemoData(memoTitleTextDialog.text.toString(), memoContentTextDialog.text.toString(), date_text, memoPlanText, memoBuilder)
             //만일 memoList 의 사이즈가 1이라면 memoLottieAnimationVisibleForm 을 true 로 바꾸어 주어 memoLottieAnimationView 를 GONE 으로 바꾸어 주어야 함.
             if (memoList.size == 1) {
                 memoLottieAnimationVisibleForm = true
@@ -635,7 +658,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
     //투두아이디를 생성하고 FireStore 에 투두 데이터를 저장하는 메소드.
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    private fun makeTodoIdAndSaveTodoDataInServer(todoText: String, contentText : String, todoBuilder: AlertDialog) {
+    private fun makeTodoIdAndSaveTodoData(todoText: String, contentText : String, todoBuilder: AlertDialog) {
         //투두 아이디 주는 것.
         todoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
         Log.d("TAG", "todoId is ${todoId}")
@@ -650,29 +673,9 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                     todoId
                 )
             )
-            //firebase 에 저장하는 단계
-//            if(FirebaseAuth.getInstance().currentUser != null)
-//            {
-//                todoDocRef = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
-//                todoDocRef.collection("todo").document(todoId).set(
-//                    TodoInstance(
-//                        todoText,
-//                        contentText,
-//                        todoId
-//                    )
-//                    , SetOptions.merge()
-//                ).addOnCompleteListener {
-//                    Toast.makeText(applicationContext, "데이터가 저장되었습니다.", Toast.LENGTH_LONG).show()
-//                    Log.d("TAG", "성공")
-//                }
-//                    .addOnFailureListener { Exception ->
-//                        Toast.makeText(applicationContext, "네트워크 연결에 실패했습니다.", Toast.LENGTH_LONG).show()
-//                        Log.d("TAG", "실패 $Exception")
-//                    }
-//            }
-//            todoRef.child(todoId!!).setValue(todoList).addOnCompleteListener {
-//                Toast.makeText(this, "투두리스트 저장완료", Toast.LENGTH_LONG).show()
-//            }
+
+            todoDB.todoDao().insert(TodoInstance(todoText, contentText, todoId))
+            Log.d("TAG", "todoDB is ${todoDB.todoDao().getAll()}")
             Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
             todoAdapter.notifyDataSetChanged()
             todoBuilder.dismiss()
@@ -695,26 +698,8 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                         todoId
                     )
                 )
-                //firebase 에 저장하는 단계
-//                if(FirebaseAuth.getInstance().currentUser != null)
-//                {
-//                    todoDocRef = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
-//                    todoDocRef.collection("todo").document(todoId).set(
-//                        TodoInstance(
-//                            todoText,
-//                            contentText,
-//                            todoId
-//                        )
-//                        , SetOptions.merge()
-//                    ).addOnCompleteListener {
-//                        Toast.makeText(applicationContext, "데이터가 저장되었습니다.", Toast.LENGTH_LONG).show()
-//                        Log.d("TAG", "성공")
-//                    }
-//                        .addOnFailureListener { Exception ->
-//                            Toast.makeText(applicationContext, "네트워크 연결에 실패했습니다.", Toast.LENGTH_LONG).show()
-//                            Log.d("TAG", "실패 $Exception")
-//                        }
-//                }
+
+                todoDB.todoDao().insert(TodoInstance(todoText, contentText, todoId))
                 Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
                 todoAdapter.notifyDataSetChanged()
                 todoBuilder.dismiss()
@@ -739,26 +724,8 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                             todoId
                         )
                     )
-                    //firebase 에 저장하는 단계
-//                    if(FirebaseAuth.getInstance().currentUser != null)
-//                    {
-//                        todoDocRef = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
-//                        todoDocRef.collection("t odo").document(todoId).set(
-//                            TodoInstance(
-//                                todoText,
-//                                contentText,
-//                                todoId
-//                            )
-//                            , SetOptions.merge()
-//                        ).addOnCompleteListener {
-//                            Toast.makeText(applicationContext, "데이터가 저장되었습니다.", Toast.LENGTH_LONG).show()
-//                            Log.d("TAG", "성공")
-//                        }
-//                            .addOnFailureListener { Exception ->
-//                                Toast.makeText(applicationContext, "네트워크 연결에 실패했습니다.", Toast.LENGTH_LONG).show()
-//                                Log.d("TAG", "실패 $Exception")
-//                            }
-//                    }
+
+                    todoDB.todoDao().insert(TodoInstance(todoText, contentText, todoId))
                     Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
                     todoAdapter.notifyDataSetChanged()
                     todoBuilder.dismiss()
@@ -784,26 +751,8 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                                 todoId
                             )
                         )
-                        //firebase 에 저장하는 단계
-//                        if(FirebaseAuth.getInstance().currentUser != null)
-//                        {
-//                            todoDocRef = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
-//                            todoDocRef.collection("todo").document(todoId).set(
-//                                TodoInstance(
-//                                    todoText,
-//                                    contentText,
-//                                    todoId
-//                                )
-//                                , SetOptions.merge()
-//                            ).addOnCompleteListener {
-//                                Toast.makeText(applicationContext, "데이터가 저장되었습니다.", Toast.LENGTH_LONG).show()
-//                                Log.d("TAG", "성공")
-//                            }
-//                                .addOnFailureListener { Exception ->
-//                                    Toast.makeText(applicationContext, "네트워크 연결에 실패했습니다.", Toast.LENGTH_LONG).show()
-//                                    Log.d("TAG", "실패 $Exception")
-//                                }
-//                        }
+
+                        todoDB.todoDao().insert(TodoInstance(todoText, contentText, todoId))
                         Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
                         todoAdapter.notifyDataSetChanged()
                         todoBuilder.dismiss()
@@ -821,7 +770,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
     //메모아이디를 생성하는 FireStore 에 메모 데이터를 저장하는 메소드.
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-    private fun makeMemoIdAndSaveMemoDataInServer(memoTitle: String, memoContent: String, date: String, memoPlan: String, memoBuilder: AlertDialog) {
+    private fun makeMemoIdAndSaveMemoData(memoTitle: String, memoContent: String, date: String, memoPlan: String, memoBuilder: AlertDialog) {
 
         //메모 아이디 주는 것.
         memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
@@ -845,6 +794,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 //                        Log.d("TAG", "실패 $Exception")
 //                    }
 //            }
+            memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
             Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
             memoAdapter.notifyDataSetChanged()
             memoBuilder.dismiss()
@@ -869,6 +819,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                         memoId
                     )
                 )
+                memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
                 //firestore 에 저장하는 단계
 //                if(FirebaseAuth.getInstance().currentUser != null)
 //                {
@@ -917,6 +868,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                             memoId
                         )
                     )
+                    memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
                     //firestore 에 저장하는 단계
 //                    if(FirebaseAuth.getInstance().currentUser != null)
 //                    {
@@ -965,6 +917,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                                 memoId
                             )
                         )
+                        memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
                         //firestore 에 저장하는 단계
 //                        if(FirebaseAuth.getInstance().currentUser != null)
 //                        {
@@ -1239,6 +1192,23 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
     //리사이클러뷰와 어답터를 연결
     private fun bridgeRecyclerViewAndAdapter() {
+        //todoList 에 todoDB 에 있는 값을 대입한 다음에 RecyclerView 에 연결한다.
+        todoList.clear()
+        todoList.addAll(todoDB.todoDao().getAll())
+        todoAdapter = TodoRecyclerViewAdapter(todoList, DoneTodoList,this@MainActivity, todoSearchList)
+        todoAdapter.notifyDataSetChanged()
+        if(tabMenuBoolean == "TODO")
+        {
+            todoRecyclerView.visibility = View.VISIBLE
+            todoRecyclerView.startAnimation(startLottieAnimationAlphaAnimation)
+        }
+
+        //memoList 에 memoDB 에 있는 값을 대입한 다음에 RecyclerView 에 연결한다.
+        memoList.clear()
+        memoList.addAll(memoDB.memoDao().getAll())
+        memoAdapter = MemoRecyclerViewAdapter(memoList, memoSearchList,this)
+        memoAdapter.notifyDataSetChanged()
+
         //todoRecyclerView adapter 연결 & RecyclerView 세팅
         todoRecyclerView.apply{
             adapter = todoAdapter
@@ -1280,4 +1250,6 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             }, 500)
         }
     }
+
+
 }
