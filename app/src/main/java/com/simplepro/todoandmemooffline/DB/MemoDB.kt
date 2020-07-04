@@ -8,4 +8,5 @@ import com.simplepro.todoandmemooffline.Dao.MemoDao
 @Database(entities = [MemoInstance::class], version = 1)
 abstract class MemoDB : RoomDatabase() {
     abstract fun memoDao() : MemoDao
+    //commit
 }
