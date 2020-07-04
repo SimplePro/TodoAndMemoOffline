@@ -509,7 +509,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             todoContentText = todoContentTextShared.toString()
         }
     }
-
+ 
     //to do 의 아이디를 가져오기 위한 메소드.
     private fun loadTodoIdData() {
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
