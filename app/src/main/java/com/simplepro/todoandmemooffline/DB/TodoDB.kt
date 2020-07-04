@@ -10,5 +10,4 @@ import com.simplepro.todoandmemooffline.Dao.TodoDao
 @Database(entities = [TodoInstance::class], version = 1)
 abstract class TodoDB : RoomDatabase() {
     abstract fun todoDao() : TodoDao
-    //commit
 }
