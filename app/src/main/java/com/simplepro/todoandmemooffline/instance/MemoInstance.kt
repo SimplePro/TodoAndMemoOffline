@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "memo")
-data class MemoInstance(//
+data class MemoInstance(
     @ColumnInfo(name = "memoTitle") val memoTitle: String = "",
     @ColumnInfo(name = "memoContent") val memoContent: String = "",
     @ColumnInfo(name = "memoCalendar") val memoCalendar: String = "",
