@@ -187,6 +187,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             if(todoList[i].todoId == todoId)
             {
                 todoDB.todoDao().delete(todoList[i])
+                todoList.removeAt(i)
                 todoSearchView.setQuery("", false)
                 todoSearchView.clearFocus()
                 todoAdapter.notifyItemRemoved(i)
