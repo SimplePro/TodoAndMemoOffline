@@ -8,5 +8,5 @@ import androidx.room.PrimaryKey
 data class DoneTodoInstance (
     @ColumnInfo(name = "doneTodo") var doneTodo : String = "",
     @ColumnInfo(name = "doneTodoContent") var doneTodoContent : String = "",
-    @PrimaryKey var doneTodoId : String = ""
+    @PrimaryKey(autoGenerate = true) val doneTodoId : Long = 0
 )

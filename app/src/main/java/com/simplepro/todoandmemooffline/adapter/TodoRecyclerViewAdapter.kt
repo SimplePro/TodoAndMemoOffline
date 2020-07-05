@@ -11,6 +11,7 @@ import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.simplepro.todoandmemooffline.DB.DoneTodoDB
+import com.simplepro.todoandmemooffline.DB.TodoDB
 import com.simplepro.todoandmemooffline.R
 import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
 import com.simplepro.todoandmemooffline.instance.TodoInstance
@@ -22,6 +23,7 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
 
     lateinit var context : Context
     lateinit var doneTodoDB : DoneTodoDB
+    lateinit var todoDB : TodoDB
 
     init {
         todoSearchList = todoList
@@ -40,6 +42,11 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
         doneTodoDB = Room.databaseBuilder(
             parent.context.applicationContext,
             DoneTodoDB::class.java, "doneTodo.db"
+        ).allowMainThreadQueries()
+            .build()
+        todoDB = Room.databaseBuilder(
+            parent.context.applicationContext,
+            TodoDB::class.java, "todo.db"
         ).allowMainThreadQueries()
             .build()
 
@@ -63,11 +70,13 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
                 {
                     if(todoList[i].todoId == todoSearchList[adapterPosition].todoId)
                     {
-                        DoneTodoList.add(DoneTodoInstance(todoList[i].todo, todoList[i].content, todoList[i].todoId))
-                        doneTodoDB.doneTodoDB().insert(DoneTodoInstance(todoList[i].todo, todoList[i].content, todoList[i].todoId))
+                        DoneTodoList.add(DoneTodoInstance(todoList[i].todo, todoList[i].content))
+                        doneTodoDB.doneTodoDB().insert(DoneTodoInstance(todoList[i].todo, todoList[i].content))
                         Log.d("TAG", "DoneTodoList[0] = ${DoneTodoList[0].doneTodo} ${DoneTodoList[0].doneTodoContent} ${DoneTodoList[0].doneTodoId}")
                     }
                 }
+                todoDB.todoDao().delete(todoList[adapterPosition])
+                todoList.removeAt(adapterPosition)
                 //Done(remove) 버튼이 클릭 되었을 때 해당 콜백 함수를 호출함.
                 DoneListener.todoOnItemClick(it, adapterPosition)
             }

@@ -739,7 +739,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         //만일 메모리스트가 비었다면 그냥 바로 추가하기
         if(memoList.isEmpty())
         {
-            memoList.add(0, MemoInstance(memoTitle, memoContent, date, "${memoPlan}", memoId)
+            memoList.add(MemoInstance(memoTitle, memoContent, date, "${memoPlan}", memoId)
             )
             memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
             Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
@@ -757,14 +757,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             }
             if (memoIdBoolean == false)
             {
-                memoList.add(0,
-                    MemoInstance(
-                        memoTitle,
-                        memoContent,
-                        date,
-                        "${memoPlan}",
-                        memoId
-                    )
+                memoList.add(MemoInstance(memoTitle, memoContent, date,"${memoPlan}", memoId)
                 )
                 memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
                 Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
@@ -784,8 +777,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                 }
                 if(memoIdBoolean == false)
                 {
-                    memoList.add(0,
-                        MemoInstance(
+                    memoList.add(MemoInstance(
                             memoTitle,
                             memoContent,
                             date,
@@ -811,8 +803,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                     }
                     if(memoIdBoolean == false)
                     {
-                        memoList.add(0,
-                            MemoInstance(
+                        memoList.add(MemoInstance(
                                 memoTitle,
                                 memoContent,
                                 date,
