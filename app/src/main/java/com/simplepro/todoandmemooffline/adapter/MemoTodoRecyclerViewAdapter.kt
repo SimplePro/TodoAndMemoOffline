@@ -7,14 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
-import com.simplepro.secondtodoandmemo.instance.TodoInstance
 //import com.simplepro.secondtodoandmemo.R
 //import com.google.firebase.auth.FirebaseAuth
 //import com.google.firebase.firestore.FirebaseFirestore
 import com.simplepro.todoandmemooffline.R
+import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
+import com.simplepro.todoandmemooffline.instance.TodoInstance
 
 //새로운 다른 itemLayout을 만들었다. (MemoRecyclerView 안에서 Dialog 쪽에서 사용됨. Dialog 안에 있는 RecyclerView의 아이디는 memoPlanRecyclerViewDialog이다.)
-class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val context: Context, private val DoneTodoListListener: memoItemViewOnClickListener)
+class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<DoneTodoInstance>, val context: Context, private val DoneTodoListListener: memoItemViewOnClickListener)
     : RecyclerView.Adapter<MemoTodoRecyclerViewAdapter.CustomViewHolder>() {
 
     //itemView 가 클릭 되었을 때 호출되는 콜백 함수.
@@ -31,13 +32,13 @@ class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val con
             //itemView 가 클릭 되었을 때
             itemView.setOnClickListener {
                 //쉐어드로 planText 의 값을 보내주어 메모에 반영함.
-                saveData(todoList.get(adapterPosition).todo)
+                saveData(todoList.get(adapterPosition).doneTodo)
                 //해당 콜백 함수를 호출함.
                 DoneTodoListListener.memoItemViewOnClick(it, adapterPosition)
             }
             //DoneTodoList 의 remove 버튼이 클릭 되었을 때
             DoneTodoListRemoveButton.setOnClickListener {
-                val doneTodoId = todoList[adapterPosition].todoId
+                val doneTodoId = todoList[adapterPosition].doneTodoId
                 //해당 position 의 값을 삭제함.
                 todoList.removeAt(adapterPosition)
 //                if(FirebaseAuth.getInstance().currentUser != null)
@@ -61,7 +62,7 @@ class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val con
 
     //역할 : 해당 position 의 item 의 데이터를 할당하는 것.
     override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
-        holder.todoTitleText.text = todoList.get(position).todo
+        holder.todoTitleText.text = todoList.get(position).doneTodo
     }
 
     //역할 : 변수에 findViewById 를 사용하여 값을 대입하는 것.

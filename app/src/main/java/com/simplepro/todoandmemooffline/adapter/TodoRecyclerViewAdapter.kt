@@ -11,7 +11,8 @@ import android.widget.*
 //import androidx.databinding.DataBindingUtil
 //import androidx.databinding.DataBindingUtil.bind
 import androidx.recyclerview.widget.RecyclerView
-import com.simplepro.secondtodoandmemo.instance.TodoInstance
+import androidx.room.Room
+import com.simplepro.todoandmemooffline.DB.DoneTodoDB
 //import com.simplepro.secondtodoandmemo.R
 //import com.google.firebase.auth.FirebaseAuth
 //import com.google.firebase.firestore.DocumentReference
@@ -19,16 +20,19 @@ import com.simplepro.secondtodoandmemo.instance.TodoInstance
 //import com.google.firebase.firestore.SetOptions
 //import com.simplepro.secondtodoandmemo.viewModel.TodoViewModel
 import com.simplepro.todoandmemooffline.R
+import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
+import com.simplepro.todoandmemooffline.instance.TodoInstance
 import java.util.*
 import kotlin.collections.ArrayList
 //import androidx.databinding.DataBindingUtil.getBinding as getBinding1
 
-class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTodoList: ArrayList<TodoInstance>, private val DoneListener: todoItemClickListener, var todoSearchList : ArrayList<TodoInstance>)
+class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTodoList: ArrayList<DoneTodoInstance>, private val DoneListener: todoItemClickListener, var todoSearchList : ArrayList<TodoInstance>)
     : RecyclerView.Adapter<TodoRecyclerViewAdapter.CustomViewHolder>(), Filterable {
 
 //    var todoSearchList : ArrayList<TodoForm>
 
     lateinit var context : Context
+    lateinit var doneTodoDB : DoneTodoDB
 
 //    lateinit var DoneTodoDocRef : DocumentReference
 
@@ -46,6 +50,11 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
     //역할 : 아이템이 생성되었을 때 실행됨.
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder {
         context = parent.context
+        doneTodoDB = Room.databaseBuilder(
+            parent.context.applicationContext,
+            DoneTodoDB::class.java, "doneTodo.db"
+        ).allowMainThreadQueries()
+            .build()
 
         val view = LayoutInflater.from(parent.context).inflate(R.layout.todo_list_item, parent, false)
         return CustomViewHolder(
@@ -67,7 +76,9 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
                 {
                     if(todoList[i].todoId == todoSearchList[adapterPosition].todoId)
                     {
-                        DoneTodoList.add(todoList[i])
+                        DoneTodoList.add(DoneTodoInstance(todoList[i].todo, todoList[i].content, todoList[i].todoId))
+//                        doneTodoDB.doneTodoDB().insert(todoList[i] as DoneTodoInstance)
+                        doneTodoDB.doneTodoDB().insert(DoneTodoInstance(todoList[i].todo, todoList[i].content, todoList[i].todoId))
 //                        if(FirebaseAuth.getInstance().currentUser != null)
 //                        {
 //                            DoneTodoDocRef = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
@@ -75,7 +86,7 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
 //                                Log.d("TAG", "DoneTodoDocRef success")
 //                            }
 //                        }
-                        Log.d("TAG", "DoneTodoList[0] = ${DoneTodoList[0].todo} ${DoneTodoList[0].content} ${DoneTodoList[0].todoId}")
+                        Log.d("TAG", "DoneTodoList[0] = ${DoneTodoList[0].doneTodo} ${DoneTodoList[0].doneTodoContent} ${DoneTodoList[0].doneTodoId}")
                     }
                 }
                 //Done(remove) 버튼이 클릭 되었을 때 해당 콜백 함수를 호출함.
