@@ -186,6 +186,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         {
             if(todoList[i].todoId == todoId)
             {
+                todoDB.todoDao().delete(todoList[i])
                 todoList.removeAt(i)
                 //firebase 에 저장하는 단계
 //                if(FirebaseAuth.getInstance().currentUser != null)
@@ -291,6 +292,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         {
             if(memoList[i].memoId == memoId)
             {
+                memoDB.memoDao().delete(memoList[i])
                 memoList.removeAt(i)
                 //firebase 에 저장하는 단계
 //                if(FirebaseAuth.getInstance().currentUser != null)
