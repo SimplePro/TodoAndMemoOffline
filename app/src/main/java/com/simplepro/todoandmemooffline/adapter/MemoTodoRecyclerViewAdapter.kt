@@ -7,6 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
+import com.simplepro.todoandmemooffline.DB.DoneTodoDB
 //import com.simplepro.secondtodoandmemo.R
 //import com.google.firebase.auth.FirebaseAuth
 //import com.google.firebase.firestore.FirebaseFirestore
@@ -18,6 +20,8 @@ import com.simplepro.todoandmemooffline.instance.TodoInstance
 class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<DoneTodoInstance>, val context: Context, private val DoneTodoListListener: memoItemViewOnClickListener)
     : RecyclerView.Adapter<MemoTodoRecyclerViewAdapter.CustomViewHolder>() {
 
+    lateinit var doneTodoDB : DoneTodoDB
+
     //itemView 가 클릭 되었을 때 호출되는 콜백 함수.
     interface memoItemViewOnClickListener {
         fun memoItemViewOnClick(view: View, position: Int)
@@ -25,6 +29,12 @@ class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<DoneTodoInstance>, val
 
     //역할 : recyclerView 가 생성되었을 때 실행하는 것.
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder {
+        doneTodoDB = Room.databaseBuilder(
+            parent.context.applicationContext,
+            DoneTodoDB::class.java, "doneTodo.db"
+        ).allowMainThreadQueries()
+            .build()
+
         val view = LayoutInflater.from(parent.context).inflate(R.layout.memo_todo_list_item, parent, false)
         return CustomViewHolder(
             view
@@ -39,6 +49,7 @@ class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<DoneTodoInstance>, val
             //DoneTodoList 의 remove 버튼이 클릭 되었을 때
             DoneTodoListRemoveButton.setOnClickListener {
                 val doneTodoId = todoList[adapterPosition].doneTodoId
+                doneTodoDB.doneTodoDB().delete(todoList[adapterPosition])
                 //해당 position 의 값을 삭제함.
                 todoList.removeAt(adapterPosition)
 //                if(FirebaseAuth.getInstance().currentUser != null)

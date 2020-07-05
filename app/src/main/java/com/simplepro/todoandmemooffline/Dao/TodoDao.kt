@@ -1,9 +1,8 @@
 package com.simplepro.todoandmemooffline.Dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import com.simplepro.secondtodoandmemo.instance.TodoInstance
+import androidx.lifecycle.LiveData
+import androidx.room.*
+import com.simplepro.todoandmemooffline.instance.TodoInstance
 
 @Dao
 interface TodoDao {
@@ -13,6 +12,9 @@ interface TodoDao {
     @Insert
     fun insert(todo : TodoInstance)
 
-    @Query("DELETE from todo")
-    fun deleteAll()
+    @Update
+    fun update(todo : TodoInstance)
+
+    @Delete
+    fun delete(todo : TodoInstance)
 }

@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.simplepro.secondtodoandmemo.instance.TodoInstance
 import com.simplepro.todoandmemooffline.Dao.TodoDao
+import com.simplepro.todoandmemooffline.instance.TodoInstance
 
 @Database(entities = [TodoInstance::class], version = 1)
 abstract class TodoDB : RoomDatabase() {

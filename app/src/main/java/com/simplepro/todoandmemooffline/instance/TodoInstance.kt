@@ -1,4 +1,4 @@
-package com.simplepro.secondtodoandmemo.instance
+package com.simplepro.todoandmemooffline.instance
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

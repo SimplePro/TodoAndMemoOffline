@@ -8,33 +8,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-//import androidx.databinding.DataBindingUtil
-//import androidx.databinding.DataBindingUtil.bind
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.simplepro.todoandmemooffline.DB.DoneTodoDB
-//import com.simplepro.secondtodoandmemo.R
-//import com.google.firebase.auth.FirebaseAuth
-//import com.google.firebase.firestore.DocumentReference
-//import com.google.firebase.firestore.FirebaseFirestore
-//import com.google.firebase.firestore.SetOptions
-//import com.simplepro.secondtodoandmemo.viewModel.TodoViewModel
 import com.simplepro.todoandmemooffline.R
 import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
 import com.simplepro.todoandmemooffline.instance.TodoInstance
 import java.util.*
 import kotlin.collections.ArrayList
-//import androidx.databinding.DataBindingUtil.getBinding as getBinding1
 
 class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTodoList: ArrayList<DoneTodoInstance>, private val DoneListener: todoItemClickListener, var todoSearchList : ArrayList<TodoInstance>)
     : RecyclerView.Adapter<TodoRecyclerViewAdapter.CustomViewHolder>(), Filterable {
 
-//    var todoSearchList : ArrayList<TodoForm>
-
     lateinit var context : Context
     lateinit var doneTodoDB : DoneTodoDB
-
-//    lateinit var DoneTodoDocRef : DocumentReference
 
     init {
         todoSearchList = todoList
@@ -77,15 +64,7 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
                     if(todoList[i].todoId == todoSearchList[adapterPosition].todoId)
                     {
                         DoneTodoList.add(DoneTodoInstance(todoList[i].todo, todoList[i].content, todoList[i].todoId))
-//                        doneTodoDB.doneTodoDB().insert(todoList[i] as DoneTodoInstance)
                         doneTodoDB.doneTodoDB().insert(DoneTodoInstance(todoList[i].todo, todoList[i].content, todoList[i].todoId))
-//                        if(FirebaseAuth.getInstance().currentUser != null)
-//                        {
-//                            DoneTodoDocRef = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
-//                            DoneTodoDocRef.collection("DoneTodo").document(todoList[i].todoId).set(todoList[i], SetOptions.merge()).addOnCompleteListener {
-//                                Log.d("TAG", "DoneTodoDocRef success")
-//                            }
-//                        }
                         Log.d("TAG", "DoneTodoList[0] = ${DoneTodoList[0].doneTodo} ${DoneTodoList[0].doneTodoContent} ${DoneTodoList[0].doneTodoId}")
                     }
                 }
