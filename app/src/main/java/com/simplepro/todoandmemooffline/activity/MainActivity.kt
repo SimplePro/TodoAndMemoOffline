@@ -22,10 +22,12 @@ import com.simplepro.secondtodoandmemo.adapter.MemoRecyclerViewAdapter
 import com.simplepro.secondtodoandmemo.adapter.MemoTodoRecyclerViewAdapter
 import com.simplepro.secondtodoandmemo.adapter.TodoRecyclerViewAdapter
 import com.simplepro.secondtodoandmemo.instance.MemoInstance
-import com.simplepro.secondtodoandmemo.instance.TodoInstance
+import com.simplepro.todoandmemooffline.DB.DoneTodoDB
 import com.simplepro.todoandmemooffline.DB.MemoDB
 import com.simplepro.todoandmemooffline.DB.TodoDB
 import com.simplepro.todoandmemooffline.R
+import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
+import com.simplepro.todoandmemooffline.instance.TodoInstance
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,7 +41,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
     //변수 선언
     var todoList: ArrayList<TodoInstance> = arrayListOf()
     var memoList: ArrayList<MemoInstance> = arrayListOf()
-    var DoneTodoList: ArrayList<TodoInstance> = arrayListOf()
+    var DoneTodoList: ArrayList<DoneTodoInstance> = arrayListOf()
     //LottieAnimation의 VISIBLE을 정해주기 위해서 선언하는 변수 (false면 VISIBLE true 면 GONE)
     var todoLottieAnimationVisibleForm = false
     var memoLottieAnimationVisibleForm = false
@@ -95,7 +97,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
     lateinit var todoDB : TodoDB
     lateinit var memoDB : MemoDB
-//    lateinit var doneTodoDB
+    lateinit var doneTodoDB : DoneTodoDB
 
 
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -118,16 +120,24 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         todoAdapter = TodoRecyclerViewAdapter(todoList, DoneTodoList,this, todoSearchList)
 
         todoDB = Room.databaseBuilder(
-                applicationContext,
-        TodoDB::class.java, "todo.db"
+            applicationContext,
+            TodoDB::class.java, "todo.db"
         ).allowMainThreadQueries()
-        .build()
+            .build()
 
         memoDB = Room.databaseBuilder(
             applicationContext,
             MemoDB::class.java, "memo.db"
         ).allowMainThreadQueries()
             .build()
+
+        doneTodoDB = Room.databaseBuilder(
+            applicationContext,
+            DoneTodoDB::class.java, "doneTodo.db"
+        ).allowMainThreadQueries()
+            .build()
+
+        DoneTodoList = doneTodoDB.doneTodoDB().getAll() as ArrayList<DoneTodoInstance>
 
         //리사이클러뷰와 어답터를 연결해주는 메소드를 호출함.
         bridgeRecyclerViewAndAdapter()
@@ -509,7 +519,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             todoContentText = todoContentTextShared.toString()
         }
     }
- 
+
     //to do 의 아이디를 가져오기 위한 메소드.
     private fun loadTodoIdData() {
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
