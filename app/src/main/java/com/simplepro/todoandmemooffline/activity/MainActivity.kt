@@ -19,13 +19,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.simplepro.secondtodoandmemo.adapter.MemoRecyclerViewAdapter
-import com.simplepro.secondtodoandmemo.adapter.MemoTodoRecyclerViewAdapter
 import com.simplepro.secondtodoandmemo.adapter.TodoRecyclerViewAdapter
 import com.simplepro.secondtodoandmemo.instance.MemoInstance
 import com.simplepro.todoandmemooffline.DB.DoneTodoDB
 import com.simplepro.todoandmemooffline.DB.MemoDB
 import com.simplepro.todoandmemooffline.DB.TodoDB
 import com.simplepro.todoandmemooffline.R
+import com.simplepro.todoandmemooffline.adapter.MemoTodoRecyclerViewAdapter
 import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
 import com.simplepro.todoandmemooffline.instance.TodoInstance
 import kotlinx.android.synthetic.main.activity_main.*

@@ -1,4 +1,4 @@
-package com.simplepro.secondtodoandmemo.adapter
+package com.simplepro.todoandmemooffline.adapter
 
 import android.content.Context
 import android.preference.PreferenceManager
@@ -9,12 +9,8 @@ import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.simplepro.todoandmemooffline.DB.DoneTodoDB
-//import com.simplepro.secondtodoandmemo.R
-//import com.google.firebase.auth.FirebaseAuth
-//import com.google.firebase.firestore.FirebaseFirestore
 import com.simplepro.todoandmemooffline.R
 import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
-import com.simplepro.todoandmemooffline.instance.TodoInstance
 
 //새로운 다른 itemLayout을 만들었다. (MemoRecyclerView 안에서 Dialog 쪽에서 사용됨. Dialog 안에 있는 RecyclerView의 아이디는 memoPlanRecyclerViewDialog이다.)
 class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<DoneTodoInstance>, val context: Context, private val DoneTodoListListener: memoItemViewOnClickListener)
