@@ -74,8 +74,6 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
                         Log.d("TAG", "DoneTodoList[0] = ${DoneTodoList[0].doneTodo} ${DoneTodoList[0].doneTodoContent} ${DoneTodoList[0].doneTodoId}")
                     }
                 }
-//                todoDB.todoDao().delete(todoSearchList[adapterPosition])
-//                todoSearchList.removeAt(adapterPosition)
                 //Done(remove) 버튼이 클릭 되었을 때 해당 콜백 함수를 호출함.
                 DoneListener.todoOnItemClick(it, adapterPosition)
             }
