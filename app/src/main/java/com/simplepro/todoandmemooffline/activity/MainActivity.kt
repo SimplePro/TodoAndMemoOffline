@@ -176,6 +176,13 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             startActivity(intent)
             finish()
         }
+
+        //업적 보러가기 눌렀을 때.
+        trophyTextView.setOnClickListener {
+            val intent = Intent(this, TrophyActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 
     //todoItem 이 remove 되었을 때 todoLottieAnimation 의 visibility 를 조정하는 콜백 메소드
