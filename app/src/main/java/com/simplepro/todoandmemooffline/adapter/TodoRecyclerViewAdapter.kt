@@ -62,7 +62,14 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
                 DoneListener.todoOnItemReplaceClick(it, adapterPosition)
             }
 
-            //todoItem 의 Done(replace) 버튼이 클릭 되었을 때
+            //todoItem 의 remove 버튼이 클릭 되었을 때
+            removeButton.setOnClickListener {
+                saveTodoIdData(todoSearchList[adapterPosition].todoId)
+                //remove 버튼이 클릭되었을 때 해당 콜백 함수를 호출함.
+                DoneListener.todoOnItemClick(it, adapterPosition)
+            }
+
+            //todoItem 의 Done 버튼이 클릭 되었을 때
             DoneButton.setOnClickListener {
                 saveTodoIdData(todoSearchList[adapterPosition].todoId)
                 for(i in 0 .. todoList.size - 1)
@@ -96,6 +103,7 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
         val todoText = itemView.findViewById<TextView>(R.id.todoListTextView)
         val DoneButton = itemView.findViewById<ImageView>(R.id.todoListDoneButton)
         val replaceButton = itemView.findViewById<ImageView>(R.id.todoListReplaceButton)
+        val removeButton = itemView.findViewById<TextView>(R.id.todoListRemoveButton)
     }
 
     //역할 : filter 를 이용하여 리사이클러뷰에 보여줄 리스트를 조절하는 것.
