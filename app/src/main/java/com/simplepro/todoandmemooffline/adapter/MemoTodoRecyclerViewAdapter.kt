@@ -48,13 +48,6 @@ class MemoTodoRecyclerViewAdapter(val todoList: ArrayList<DoneTodoInstance>, val
                 doneTodoDB.doneTodoDB().delete(todoList[adapterPosition])
                 //해당 position 의 값을 삭제함.
                 todoList.removeAt(adapterPosition)
-//                if(FirebaseAuth.getInstance().currentUser != null)
-//                {
-//                    val doneTodoDocRef = FirebaseFirestore.getInstance().collection("users").document(FirebaseAuth.getInstance().currentUser!!.uid)
-//                    doneTodoDocRef.collection("DoneTodo").document(doneTodoId).delete().addOnCompleteListener {
-//                        Toast.makeText(parent.context.applicationContext, "데이터가 삭제되었습니다.", Toast.LENGTH_LONG).show()
-//                    }
-//                }
                 //notify 로 recyclerView 에 반영함.
                 notifyItemRemoved(adapterPosition)
                 notifyItemChanged(adapterPosition, todoList.size)
