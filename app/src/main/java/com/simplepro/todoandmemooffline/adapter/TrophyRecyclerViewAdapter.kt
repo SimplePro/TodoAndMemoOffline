@@ -12,10 +12,14 @@ import com.simplepro.todoandmemooffline.DB.DoneTodoDB
 import com.simplepro.todoandmemooffline.R
 import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
 
-class TrophyRecyclerViewAdapter(val trophyList: ArrayList<DoneTodoInstance>)
+class TrophyRecyclerViewAdapter(val trophyList: ArrayList<DoneTodoInstance>, val itemRemoveOnClick : itemRemoveOnClickListener)
     : RecyclerView.Adapter<TrophyRecyclerViewAdapter.CustomViewHolder>() {
 
     lateinit var trophyListDB : DoneTodoDB
+
+    interface itemRemoveOnClickListener {
+        fun itemRemove(view : View, position: Int)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder {
         trophyListDB = Room.databaseBuilder(
@@ -31,6 +35,7 @@ class TrophyRecyclerViewAdapter(val trophyList: ArrayList<DoneTodoInstance>)
                     trophyList.removeAt(adapterPosition)
                     notifyItemRemoved(adapterPosition)
                     notifyItemChanged(adapterPosition, trophyList.size)
+                    itemRemoveOnClick.itemRemove(it, adapterPosition)
                 }
             }
     }
