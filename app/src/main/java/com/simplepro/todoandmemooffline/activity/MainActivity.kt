@@ -1,6 +1,12 @@
 package com.simplepro.todoandmemooffline.activity
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -29,6 +35,8 @@ import com.simplepro.todoandmemooffline.adapter.MemoTodoRecyclerViewAdapter
 import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
 import com.simplepro.todoandmemooffline.instance.TodoInstance
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.todo_add_dialog.*
+import kotlinx.android.synthetic.main.todo_add_dialog.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
@@ -87,6 +95,12 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
     lateinit var todoAdapter : TodoRecyclerViewAdapter
     lateinit var memoTodoAdapter : MemoTodoRecyclerViewAdapter
 
+    lateinit var notificationManager : NotificationManager
+    lateinit var notificationChannel : NotificationChannel
+    lateinit var builder : Notification.Builder
+    private val channelId = "com.simplepro.todoandmemooffline"
+    private val description = "Test notification"
+
     var memoSearchList : ArrayList<MemoInstance> = arrayListOf()
     var todoSearchList : ArrayList<TodoInstance> = arrayListOf()
 
@@ -119,31 +133,11 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         memoAdapter = MemoRecyclerViewAdapter(memoList, memoSearchList,this)
         todoAdapter = TodoRecyclerViewAdapter(todoList, DoneTodoList,this, todoSearchList)
 
-        todoDB = Room.databaseBuilder(
-            applicationContext,
-            TodoDB::class.java, "todo.db"
-        ).allowMainThreadQueries()
-            .build()
-
-        memoDB = Room.databaseBuilder(
-            applicationContext,
-            MemoDB::class.java, "memo.db"
-        ).allowMainThreadQueries()
-            .build()
-
-        doneTodoDB = Room.databaseBuilder(
-            applicationContext,
-            DoneTodoDB::class.java, "doneTodo.db"
-        ).allowMainThreadQueries()
-            .build()
-
-        DoneTodoList = doneTodoDB.doneTodoDB().getAll() as ArrayList<DoneTodoInstance>
+        //투두 데이터, 메모 데이터, 던투두 데이터를 가져오는 메소드를 호출함.
+        bringTodoAndMemoAndDoneTodoData()
 
         //리사이클러뷰와 어답터를 연결해주는 메소드를 호출함.
         bridgeRecyclerViewAndAdapter()
-
-        //투두 데이터, 메모 데이터, 던투두 데이터를 파이어베이스에서 가져오는 메소드를 호출함.
-//        bringTodoAndMemoAndDoneTodoDataToFirebase()
 
         //로티 애니메이션의 visible 을 조정해주는 메소드를 호출함.
         controlLottieAnimationVisible()
@@ -507,24 +501,28 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         todoBuilder.show()
 
         todoButton.setOnClickListener {
-            Log.d("TAG", "MainActivity.todoDialogDeclaration - todoButton is pressed")
-
-            makeTodoIdAndSaveTodoData(todoText.text.toString(), contentText.text.toString(), todoBuilder)
-            //만일 todoList의 아이템을 추가했을 때 todoList 의 사이즈가 1이면 todoLottieAnimationVisibleForm 을 true 로 바꾸어 주어 LottieAnimation 의 Visible 을 조정해주어야 함.
-            if (todoList.size == 1) {
-                todoLottieAnimationVisibleForm = true
-                if(todoRecyclerView.visibility == View.GONE)
-                {
-                    todoRecyclerView.visibility = View.VISIBLE
+            if(todoMView.todoEditTextDialog.text.toString().isNotEmpty())
+            {
+                makeTodoIdAndSaveTodoData(todoText.text.toString(), contentText.text.toString(), todoBuilder)
+                //만일 todoList의 아이템을 추가했을 때 todoList 의 사이즈가 1이면 todoLottieAnimationVisibleForm 을 true 로 바꾸어 주어 LottieAnimation 의 Visible 을 조정해주어야 함.
+                if (todoList.size == 1) {
+                    todoLottieAnimationVisibleForm = true
+                    if(todoRecyclerView.visibility == View.GONE)
+                    {
+                        todoRecyclerView.visibility = View.VISIBLE
+                    }
+                }
+                //만일 todoLottieAnimationVisibleForm 이 true 이면 todoLottieAnimationView를 애니메이션고 함께 자연스럽게 GONE 으로 바꾸어 줌.
+                if (todoLottieAnimationVisibleForm == true) {
+                    todoLottieAnimationLayout.startAnimation(lottieAnimationAlphaAnimation)
+                    Handler().postDelayed({
+                        todoLottieAnimationLayout.visibility = View.GONE
+                        todoLottieAnimationVisibleForm = false
+                    }, 500)
                 }
             }
-            //만일 todoLottieAnimationVisibleForm 이 true 이면 todoLottieAnimationView를 애니메이션고 함께 자연스럽게 GONE 으로 바꾸어 줌.
-            if (todoLottieAnimationVisibleForm == true) {
-                todoLottieAnimationLayout.startAnimation(lottieAnimationAlphaAnimation)
-                Handler().postDelayed({
-                    todoLottieAnimationLayout.visibility = View.GONE
-                    todoLottieAnimationVisibleForm = false
-                }, 500)
+            else {
+                Toast.makeText(applicationContext, "할 일을 적어주세요.", Toast.LENGTH_LONG).show()
             }
         }
         //닫기 버튼이 클릭되었을 때
@@ -637,8 +635,8 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         {
             todoList.add(0, TodoInstance(todoText, contentText, todoId)
             )
-
             todoDB.todoDao().insert(TodoInstance(todoText, contentText, todoId))
+//            makeNotification(todoText)
             Log.d("TAG", "todoDB is ${todoDB.todoDao().getAll()}")
             Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
             todoAdapter.notifyDataSetChanged()
@@ -664,6 +662,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                 )
 
                 todoDB.todoDao().insert(TodoInstance(todoText, contentText, todoId))
+//                makeNotification(todoText)
                 Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
                 todoAdapter.notifyDataSetChanged()
                 todoBuilder.dismiss()
@@ -690,6 +689,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                     )
 
                     todoDB.todoDao().insert(TodoInstance(todoText, contentText, todoId))
+//                    makeNotification(todoText)
                     Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
                     todoAdapter.notifyDataSetChanged()
                     todoBuilder.dismiss()
@@ -717,6 +717,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                         )
 
                         todoDB.todoDao().insert(TodoInstance(todoText, contentText, todoId))
+//                        makeNotification(todoText)
                         Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
                         todoAdapter.notifyDataSetChanged()
                         todoBuilder.dismiss()
@@ -1067,23 +1068,6 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
     //리사이클러뷰와 어답터를 연결
     private fun bridgeRecyclerViewAndAdapter() {
-        //todoList 에 todoDB 에 있는 값을 대입한 다음에 RecyclerView 에 연결한다.
-        todoList.clear()
-        todoList.addAll(todoDB.todoDao().getAll())
-        todoAdapter = TodoRecyclerViewAdapter(todoList, DoneTodoList,this@MainActivity, todoSearchList)
-        todoAdapter.notifyDataSetChanged()
-        if(tabMenuBoolean == "TODO")
-        {
-            todoRecyclerView.visibility = View.VISIBLE
-            todoRecyclerView.startAnimation(startLottieAnimationAlphaAnimation)
-        }
-
-        //memoList 에 memoDB 에 있는 값을 대입한 다음에 RecyclerView 에 연결한다.
-        memoList.clear()
-        memoList.addAll(memoDB.memoDao().getAll())
-        memoAdapter = MemoRecyclerViewAdapter(memoList, memoSearchList,this)
-        memoAdapter.notifyDataSetChanged()
-
         //todoRecyclerView adapter 연결 & RecyclerView 세팅
         todoRecyclerView.apply{
             adapter = todoAdapter
@@ -1126,5 +1110,96 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
+//    private fun makeNotification(todoText : String) {
+//        notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//        val intent = Intent(applicationContext, MainActivity::class.java)
+//
+//        val pendingIntent = PendingIntent.getActivities(this, 0, arrayOf(intent), PendingIntent.FLAG_UPDATE_CURRENT)
+//
+//        val contentView = RemoteViews(packageName, R.layout.todo_notification_layout)
+//
+//        contentView.setTextViewText(R.id.notificationTodoTitleTextView, todoText)
+//
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+//        {
+//            notificationChannel = NotificationChannel(channelId, description, NotificationManager.IMPORTANCE_HIGH)
+//            notificationChannel.enableLights(true)
+//            notificationChannel.enableVibration(true)
+//            notificationManager.createNotificationChannel(notificationChannel)
+//
+//            builder = Notification.Builder(this, channelId)
+//                .setContent(contentView)
+//                .setContentIntent(pendingIntent)
+//                .setSmallIcon(R.mipmap.ic_launcher_round)
+//                .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.app_logo_offline_1080))
+//                .setContentIntent(pendingIntent)
+//        }
+//        else {
+//            builder = Notification.Builder(this)
+//                .setContent(contentView)
+//                .setContentIntent(pendingIntent)
+//                .setSmallIcon(R.mipmap.ic_launcher_round)
+//                .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.app_logo_offline_1080))
+//                .setContentIntent(pendingIntent)
+//        }
+//        notificationManager.notify(1234, builder.build())
+//    }
 
+    private fun bringTodoAndMemoAndDoneTodoData() {
+        //todoData 를 가져오는 메소드.
+        bringTodoData()
+
+        //memoData 를 가져오는 메소드.
+        bringMemoData()
+
+        //doneTodoData 를 가져오는 메소드.
+        bringDoneTodoData()
+    }
+
+    //todoData 를 가져오는 메소드.
+    private fun bringTodoData() {
+        todoDB = Room.databaseBuilder(
+            applicationContext,
+            TodoDB::class.java, "todo.db"
+        ).allowMainThreadQueries()
+            .build()
+
+
+        //todoList 에 todoDB 에 있는 값을 대입한 다음에 RecyclerView 에 연결한다.
+        todoList.clear()
+        todoList.addAll(todoDB.todoDao().getAll())
+        todoAdapter = TodoRecyclerViewAdapter(todoList, DoneTodoList,this@MainActivity, todoSearchList)
+        todoAdapter.notifyDataSetChanged()
+        if(tabMenuBoolean == "TODO")
+        {
+            todoRecyclerView.visibility = View.VISIBLE
+            todoRecyclerView.startAnimation(startLottieAnimationAlphaAnimation)
+        }
+    }
+
+    //memoData 를 가져오는 메소드.
+    private fun bringMemoData() {
+        memoDB = Room.databaseBuilder(
+            applicationContext,
+            MemoDB::class.java, "memo.db"
+        ).allowMainThreadQueries()
+            .build()
+
+        //memoList 에 memoDB 에 있는 값을 대입한 다음에 RecyclerView 에 연결한다.
+        memoList.clear()
+        memoList.addAll(memoDB.memoDao().getAll())
+        memoAdapter = MemoRecyclerViewAdapter(memoList, memoSearchList,this)
+        memoAdapter.notifyDataSetChanged()
+    }
+
+    //doneTodoData 를 가져오는 메소드.
+    private fun bringDoneTodoData() {
+        doneTodoDB = Room.databaseBuilder(
+            applicationContext,
+            DoneTodoDB::class.java, "doneTodo.db"
+        ).allowMainThreadQueries()
+            .build()
+
+        DoneTodoList = doneTodoDB.doneTodoDB().getAll() as ArrayList<DoneTodoInstance>
+    }
 }
