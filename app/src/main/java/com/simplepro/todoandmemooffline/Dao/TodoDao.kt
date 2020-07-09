@@ -1,12 +1,11 @@
 package com.simplepro.todoandmemooffline.Dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.simplepro.todoandmemooffline.instance.TodoInstance
 
 @Dao
 interface TodoDao {
-    @Query("SELECT * FROM todo")
+    @Query("SELECT * FROM todo ORDER BY todoId DESC")
     fun getAll() : List<TodoInstance>
 
     @Insert
