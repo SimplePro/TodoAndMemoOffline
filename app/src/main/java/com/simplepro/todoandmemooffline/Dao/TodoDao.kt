@@ -5,7 +5,7 @@ import com.simplepro.todoandmemooffline.instance.TodoInstance
 
 @Dao
 interface TodoDao {
-    @Query("SELECT * FROM todo ORDER BY todoId DESC")
+    @Query("SELECT * FROM todo")
     fun getAll() : List<TodoInstance>
 
     @Insert
