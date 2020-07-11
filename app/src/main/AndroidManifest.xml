@@ -19,6 +19,8 @@
         </activity>
         <activity android:name=".activity.IntroduceDeveloperActivity" />
         <activity android:name=".activity.MainActivity"></activity>
+
+        <receiver android:name=".receiver.AlarmReceiver"/>
     </application>
 
 </manifest>

@@ -1,17 +1,27 @@
 package com.simplepro.secondtodoandmemo.adapter
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.os.Build
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.simplepro.todoandmemooffline.DB.DoneTodoDB
 import com.simplepro.todoandmemooffline.DB.TodoDB
 import com.simplepro.todoandmemooffline.R
+import com.simplepro.todoandmemooffline.activity.MainActivity
 import com.simplepro.todoandmemooffline.instance.DoneTodoInstance
 import com.simplepro.todoandmemooffline.instance.TodoInstance
 import java.util.*
@@ -54,10 +64,13 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
             view
         ).apply {
 
+
+
             //todoItem 의 replace 버튼이 클릭 되었을 때
             replaceButton.setOnClickListener {
                 saveTodoTitleAndContentData(todoSearchList[adapterPosition].todo, todoSearchList[adapterPosition].content)
                 saveTodoIdData(todoSearchList[adapterPosition].todoId)
+                saveTodoHourAndMinuteData(todoSearchList[adapterPosition].hour, todoSearchList[adapterPosition].minute)
                 //변수 선언
                 DoneListener.todoOnItemReplaceClick(it, adapterPosition)
             }
@@ -95,7 +108,7 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
     //데이터를 할당함. (꾸며주는 것. text = string)
     override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
         holder.todoText.text = todoSearchList[position].todo
-//        holder.bind(todoSearchList[position])
+        holder.todoAlarmText.setText("(${todoSearchList[position].hour}:${todoSearchList[position].minute})")
     }
 
     //데이터를 BindViewHolder 에 넘겨주는 것
@@ -104,6 +117,7 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
         val DoneButton = itemView.findViewById<ImageView>(R.id.todoListDoneButton)
         val replaceButton = itemView.findViewById<ImageView>(R.id.todoListReplaceButton)
         val removeButton = itemView.findViewById<TextView>(R.id.todoListRemoveButton)
+        val todoAlarmText = itemView.findViewById<TextView>(R.id.todoListAlarmTextView)
     }
 
     //역할 : filter 를 이용하여 리사이클러뷰에 보여줄 리스트를 조절하는 것.
@@ -153,6 +167,17 @@ class TodoRecyclerViewAdapter(val todoList: ArrayList<TodoInstance>, val DoneTod
 
         editor
             .putString("todoId", todoId)
+            .apply()
+    }
+
+    private fun saveTodoHourAndMinuteData(todoHour : Int, todoMinute : Int)
+    {
+        val pref = PreferenceManager.getDefaultSharedPreferences(context)
+        val editor = pref.edit()
+
+        editor
+            .putInt("todoHour", todoHour)
+            .putInt("todoMinute", todoMinute)
             .apply()
     }
 
