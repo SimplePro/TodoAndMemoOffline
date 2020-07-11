@@ -194,6 +194,11 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         {
             if(todoList[i].todoId == todoId)
             {
+                val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val alarmIntent = Intent(this, AlarmReceiver::class.java)
+                val pendingIntent = PendingIntent.getBroadcast(this, todoList[i].requestCode, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+                alarmManager.cancel(pendingIntent)
+                pendingIntent.cancel()
                 todoDB.todoDao().delete(todoList[i])
                 todoList.removeAt(i)
                 todoSearchView.setQuery("", false)
@@ -244,9 +249,6 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         todoHour = 25
         todoMinute = 25
 
-        //알람을 정하지 않으면 false, 정했으면 true
-        var choiceAlarmBoolean = false
-
         builder.setView(mView)
         builder.show()
 
@@ -260,7 +262,6 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             todoAddLayout.visibility = View.VISIBLE
             todoAlarmTextView.setTextColor(BLACK)
             todoAlarmTextView.setText("${todoTimePicker.hour}:${todoTimePicker.minute}")
-            choiceAlarmBoolean = true
         }
 
         //수정 버튼이 클릭되었을 때
@@ -269,21 +270,29 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             {
                 if(todoList[i].todoId == todoId)
                 {
+                    val calendar = Calendar.getInstance()
+                    calendar.timeInMillis = System.currentTimeMillis()
+                    calendar.set(Calendar.HOUR_OF_DAY, todoHour)
+                    calendar.set(Calendar.MINUTE, todoMinute)
+                    calendar.set(Calendar.SECOND, 0)
+                    val alarmManager : AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                    val alarmIntent = Intent(this, AlarmReceiver::class.java)
+                    alarmIntent.putExtra("todoText", todoList[position].todo)
+                    val requestCode : Int = todoList[i].requestCode
+                    val pendingIntent : PendingIntent = PendingIntent.getBroadcast(this, requestCode, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
                     todoList.set(i,
                         TodoInstance(
                             todoText.text.toString(),
                             contentText.text.toString(),
                             todoTimePicker.hour,
                             todoTimePicker.minute,
-//                            todoList[i].pendingIntent,
-//                            todoList[i].alarmManger,
                             todoList[i].requestCode,
                             todoList[i].todoId
                         )
                     )
                     todoDB.todoDao().update(TodoInstance(todoText.text.toString(), contentText.text.toString(),
                         todoTimePicker.hour, todoTimePicker.minute,
-//                        todoList[i].pendingIntent, todoList[i].alarmManger,
                         todoList[i].requestCode,
                         todoList[i].todoId))
                     todoSearchView.setQuery("", false)

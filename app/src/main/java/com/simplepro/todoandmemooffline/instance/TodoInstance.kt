@@ -17,5 +17,5 @@ data class TodoInstance (
 //    val pendingIntent : PendingIntent,
 ////    @ColumnInfo(name = "alarmManager")
 //    val alarmManger : AlarmManager,
-    @ColumnInfo(name = "requestCode") val requestCode : Int?,
+    @ColumnInfo(name = "requestCode") val requestCode : Int = 0,
     @PrimaryKey val todoId: String = "")
