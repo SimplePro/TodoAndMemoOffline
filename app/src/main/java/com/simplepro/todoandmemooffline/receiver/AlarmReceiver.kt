@@ -11,9 +11,12 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Build
 import android.util.Log
+import android.widget.CalendarView
 import android.widget.RemoteViews
 import com.simplepro.todoandmemooffline.R
 import com.simplepro.todoandmemooffline.activity.MainActivity
+import java.text.SimpleDateFormat
+import java.util.*
 
 class AlarmReceiver : BroadcastReceiver() {
 
@@ -30,8 +33,13 @@ class AlarmReceiver : BroadcastReceiver() {
             Log.d("TAG", "hasExtra")
             val todoText = intent!!.getStringExtra("todoText")
             val contentView = RemoteViews(context!!.packageName, R.layout.todo_notification_layout)
+            val now = System.currentTimeMillis()
+            val mDate = Date(now)
+            val simpleDate = SimpleDateFormat("hh:mm")
+            val getTime = simpleDate.format(mDate)
 
             contentView.setTextViewText(R.id.notificationTodoTitleTextView, todoText)
+            contentView.setTextViewText(R.id.timeTextViewNotification, getTime)
             notificationManager = context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             val intent = Intent(context, MainActivity::class.java)
@@ -40,22 +48,21 @@ class AlarmReceiver : BroadcastReceiver() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 notificationChannel = NotificationChannel(channelId, description, NotificationManager.IMPORTANCE_HIGH)
                 notificationChannel.enableLights(true)
-                notificationChannel.lightColor = Color.GREEN
                 notificationChannel.enableVibration(true)
                 notificationManager.createNotificationChannel(notificationChannel)
 
                 builder = Notification.Builder(context, channelId)
                     .setContent(contentView)
                     .setContentIntent(pendingIntent)
-                    .setSmallIcon(R.drawable.app_logo)
-                    .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.app_logo))
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
                     .setContentIntent(pendingIntent)
             } else {
                 builder = Notification.Builder(context)
                     .setContent(contentView)
                     .setContentIntent(pendingIntent)
-                    .setSmallIcon(R.drawable.app_logo)
-                    .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.drawable.app_logo))
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
                     .setContentIntent(pendingIntent)
             }
             notificationManager.notify(1234, builder.build())

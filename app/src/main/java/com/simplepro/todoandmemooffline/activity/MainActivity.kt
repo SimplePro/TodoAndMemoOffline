@@ -242,6 +242,8 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         todoText.setText(todoTitleText)
         contentText.setText(todoContentText)
         todoAlarmTextView.setText("$todoHour:$todoMinute")
+        todoTimePicker.hour = todoHour
+        todoTimePicker.minute = todoMinute
 
         todoTitleText = ""
         todoContentText = ""
