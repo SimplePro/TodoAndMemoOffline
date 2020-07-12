@@ -220,6 +220,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
     @RequiresApi(Build.VERSION_CODES.M)
     override fun todoOnItemReplaceClick(view: View, position: Int) {
         val dialog = AlertDialog.Builder(this)
+
         val edialog: LayoutInflater = LayoutInflater.from(this)
         val mView: View = edialog.inflate(R.layout.todo_add_dialog, null)
         val builder: AlertDialog = dialog.create()
@@ -241,13 +242,9 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         todoText.setText(todoTitleText)
         contentText.setText(todoContentText)
         todoAlarmTextView.setText("$todoHour:$todoMinute")
-        todoTimePicker.hour = todoHour
-        todoTimePicker.minute = todoMinute
 
         todoTitleText = ""
         todoContentText = ""
-        todoHour = 25
-        todoMinute = 25
 
         builder.setView(mView)
         builder.show()
@@ -266,10 +263,13 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
         //수정 버튼이 클릭되었을 때
         todoButton.setOnClickListener {
+            Log.d("TAG", "setOnClick todoButton replace")
             for(i in 0 .. todoList.size - 1)
             {
                 if(todoList[i].todoId == todoId)
                 {
+                    todoHour = todoTimePicker.hour
+                    todoMinute = todoTimePicker.minute
                     val calendar = Calendar.getInstance()
                     calendar.timeInMillis = System.currentTimeMillis()
                     calendar.set(Calendar.HOUR_OF_DAY, todoHour)
@@ -628,13 +628,13 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
     private fun loadTodoHourAndMinuteData(){
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
         val todoHourShared = pref.getInt("todoHour", 25)
-        val todoMinuteShared = pref.getInt("todoMinute", 25)
+        val todoMinuteShared = pref.getInt("todoMinute", 61)
 
         if(todoHourShared != 25)
         {
             todoHour = todoHourShared
         }
-        if(todoMinuteShared != 25)
+        if(todoMinuteShared != 61)
         {
             todoMinute = todoMinuteShared
         }
@@ -1281,41 +1281,6 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
-    private fun makeNotification(todoText : String, todoId : Int) {
-        notificationManager = this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val intent = Intent(applicationContext, MainActivity::class.java)
-
-        val pendingIntent = PendingIntent.getActivities(this, 0, arrayOf(intent), PendingIntent.FLAG_UPDATE_CURRENT)
-
-        val contentView = RemoteViews(packageName, R.layout.todo_notification_layout)
-
-        contentView.setTextViewText(R.id.notificationTodoTitleTextView, todoText)
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-        {
-            notificationChannel = NotificationChannel(channelId, description, NotificationManager.IMPORTANCE_HIGH)
-            notificationChannel.enableLights(true)
-            notificationChannel.enableVibration(true)
-            notificationManager.createNotificationChannel(notificationChannel)
-
-            builder = Notification.Builder(this, channelId)
-                .setContent(contentView)
-                .setContentIntent(pendingIntent)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.app_logo_offline_1080))
-                .setContentIntent(pendingIntent)
-        }
-        else {
-            builder = Notification.Builder(this)
-                .setContent(contentView)
-                .setContentIntent(pendingIntent)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setLargeIcon(BitmapFactory.decodeResource(this.resources, R.drawable.app_logo_offline_1080))
-                .setContentIntent(pendingIntent)
-        }
-        notificationManager.notify(1234, builder.build())
-    }
-
     private fun bringTodoAndMemoAndDoneTodoData() {
         //todoData 를 가져오는 메소드.
         bringTodoData()
@@ -1373,24 +1338,4 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
         DoneTodoList = doneTodoDB.doneTodoDB().getAll() as ArrayList<DoneTodoInstance>
     }
-
-//    @RequiresApi(Build.VERSION_CODES.M)
-//    private fun makeHour(): Any {
-//        val mView = LayoutInflater.from(this).inflate(R.layout.todo_add_dialog, null)
-//        val todoTimePicker = mView.findViewById<TimePicker>(R.id.timePickerDialog)
-//
-//        val currentTime = Calendar.getInstance()
-//        currentTime.timeInMillis = System.currentTimeMillis()
-//
-//        val alarmTime = Calendar.getInstance()
-//        alarmTime.timeInMillis = System.currentTimeMillis()
-//        var alarmHour : Int = todoTimePicker.hour
-//
-//
-//        return alarmHour
-//    }
-//
-//    private fun makeMinute() : Int {
-//        var alarmMinute : Int =
-//    }
 }

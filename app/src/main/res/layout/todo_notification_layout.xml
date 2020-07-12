@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="60dp"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"
+    android:background="#ffffff"
     >
 
     <ImageView
+        android:layout_marginVertical="10dp"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:src="@drawable/app_logo_offline_1080"
-        android:padding="10dp"/>
+        android:padding="10dp"
+        />
 
     <LinearLayout
+        android:layout_marginVertical="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -23,18 +27,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="계획 시간이 됬습니다!"
-        android:fontFamily="@font/mapo"
         android:textColor="#777777"
         android:textSize="13dp"
         />
 
     <TextView
-        android:textStyle="bold"
         android:id="@+id/notificationTodoTitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="test"
-        android:fontFamily="@font/mapo"
         android:textSize="23dp"
         android:textColor="@android:color/black"/>
 
