@@ -43,6 +43,9 @@ class AlarmReceiver : BroadcastReceiver() {
             notificationManager = context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             val intent = Intent(context, MainActivity::class.java)
+                .setAction(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_LAUNCHER)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             val pendingIntent = PendingIntent.getActivities(context, 0, arrayOf(intent), PendingIntent.FLAG_UPDATE_CURRENT)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

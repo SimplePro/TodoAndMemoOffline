@@ -18,8 +18,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.IntroduceDeveloperActivity" />
-        <activity android:name=".activity.MainActivity"></activity>
-
+        <activity android:name=".activity.MainActivity"
+            android:launchMode="singleTask"></activity>
         <receiver android:name=".receiver.AlarmReceiver"/>
     </application>
 

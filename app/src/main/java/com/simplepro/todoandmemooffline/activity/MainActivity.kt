@@ -97,12 +97,6 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
     lateinit var todoAdapter : TodoRecyclerViewAdapter
     lateinit var memoTodoAdapter : MemoTodoRecyclerViewAdapter
 
-    lateinit var notificationManager : NotificationManager
-    lateinit var notificationChannel : NotificationChannel
-    lateinit var builder : Notification.Builder
-    private val channelId = "com.simplepro.todoandmemooffline"
-    private val description = "Test notification"
-
     var memoSearchList : ArrayList<MemoInstance> = arrayListOf()
     var todoSearchList : ArrayList<TodoInstance> = arrayListOf()
 
@@ -184,6 +178,12 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
             startActivity(intent)
             finish()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(1234)
     }
 
     //todoItem 이 remove 되었을 때 todoLottieAnimation 의 visibility 를 조정하는 콜백 메소드
