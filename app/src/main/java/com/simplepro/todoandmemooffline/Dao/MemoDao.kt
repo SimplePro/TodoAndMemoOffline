@@ -5,7 +5,7 @@ import com.simplepro.secondtodoandmemo.instance.MemoInstance
 
 @Dao
 interface MemoDao {
-    @Query("SELECT * FROM memo")
+    @Query("SELECT * FROM memo ORDER BY memoId DESC")
     fun getAll() : List<MemoInstance>
 
     @Insert

@@ -108,6 +108,9 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
     var todoHour by Delegates.notNull<Int>()
     var todoMinute by Delegates.notNull<Int>()
 
+    var todoIdCount : Int = 0
+    var memoIdCount : Int = 0
+
     lateinit var todoDB : TodoDB
     lateinit var memoDB : MemoDB
     lateinit var doneTodoDB : DoneTodoDB
@@ -131,6 +134,12 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         memoTodoAdapter = MemoTodoRecyclerViewAdapter(DoneTodoList, this, this)
         memoAdapter = MemoRecyclerViewAdapter(memoList, memoSearchList,this)
         todoAdapter = TodoRecyclerViewAdapter(todoList, DoneTodoList,this, todoSearchList)
+
+        //todoIdCount 의 데이터를 가져오는 메소드를 호출함.
+        loadTodoIdCountData()
+
+        //memoIdCount 의 데이터를 가져오는 메소드를 호출함.
+        loadMemoIdCountData()
 
         //투두 데이터, 메모 데이터, 던투두 데이터를 가져오는 메소드를 호출함.
         bringTodoAndMemoAndDoneTodoData()
@@ -180,6 +189,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
+    //알람이 왔을 때 매인 액티비티에 있는 상태이면 notification 을 제거한다.
     override fun onResume() {
         super.onResume()
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -279,7 +289,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
                     calendar.set(Calendar.SECOND, 0)
                     val alarmManager : AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
                     val alarmIntent = Intent(this, AlarmReceiver::class.java)
-                    alarmIntent.putExtra("todoText", todoList[position].todo)
+                    alarmIntent.putExtra("todoText", todoText.text.toString())
                     val requestCode : Int = todoList[i].requestCode
                     val pendingIntent : PendingIntent = PendingIntent.getBroadcast(this, requestCode, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT)
                     alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
@@ -512,6 +522,26 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
     }
 
+    //memoIdCount 를 가져오기 위한 메소드.
+    private fun loadMemoIdCountData(){
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val memoIdCountShared = pref.getInt("memoIdCount", 0)
+        if(memoIdCountShared != 0)
+        {
+            memoIdCount = memoIdCountShared
+        }
+    }
+
+    //memoIdCount 를 저장하기 위한 메소드.
+    private fun saveMemoIdCountData(){
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val editor = pref.edit()
+
+        editor
+            .putInt("memoIdCount", memoIdCount)
+            .apply()
+    }
+
     //todoDialog 메소드
     @RequiresApi(Build.VERSION_CODES.M)
     private fun todoDialogDeclaration() {
@@ -543,12 +573,13 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
 
         todoBuilder.setView(todoMView)
         todoBuilder.show()
-
+        //시간 텍스트가 눌렸을 때
         todoAlarmTextView.setOnClickListener {
             todoAddLayout.visibility = View.INVISIBLE
             todoTimePickerLayout.visibility = View.VISIBLE
         }
 
+        //타임피커의 확인 버튼이 눌렸을 때
         todoTimePickerAnswerButton.setOnClickListener {
             todoTimePickerLayout.visibility = View.GONE
             todoAddLayout.visibility = View.VISIBLE
@@ -627,6 +658,7 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
     }
 
+    //to do 의 hour 와 minute 을 가져오기 위한 메소드.
     private fun loadTodoHourAndMinuteData(){
         val pref = PreferenceManager.getDefaultSharedPreferences(this)
         val todoHourShared = pref.getInt("todoHour", 25)
@@ -640,6 +672,27 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         {
             todoMinute = todoMinuteShared
         }
+    }
+
+    //todoIdCount 를 가져오기 위한 메소드.
+    private fun loadTodoIdCountData(){
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val todoIdCountShared = pref.getInt("todoIdCount", 0)
+
+        if(todoIdCountShared != 0)
+        {
+            todoIdCount = todoIdCountShared
+        }
+    }
+
+    //todoIdCount 를 저장하기 위한 메소드.
+    private fun saveTodoIdCountData(){
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val editor = pref.edit()
+
+        editor
+            .putInt("todoIdCount", todoIdCount)
+            .apply()
     }
 
     //memoDialog 메소드
@@ -770,140 +823,23 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         }
 
         //투두 아이디 주는 것.
-        todoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
+        todoIdCount = todoIdCount + 1
+        todoId = "$todoIdCount"
         Log.d("TAG", "todoId is ${todoId}")
-
-        //만일 투두리스트가 비었다면 그냥 바로 추가하기
-        if(todoList.isEmpty())
-        {
-            todoList.add(0, TodoInstance(todoText, contentText,
-                hour, minute,
-//                pendingIntent, alarmManager,
-                randomUUID,
-                todoId)
-            )
-            todoDB.todoDao().insert(TodoInstance(todoText, contentText,
-                hour, minute,
-//                pendingIntent, alarmManager,
-                randomUUID,
-                todoId))
-//            makeNotification(todoText)
-            Log.d("TAG", "todoDB is ${todoDB.todoDao().getAll()}")
-            Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
-            todoAdapter.notifyDataSetChanged()
-            todoBuilder.dismiss()
-        }
-        //만일 투두리스트가 비지 않았다면.
-        else if(todoList.isNotEmpty())
-        {
-            for(i in 0 .. todoList.size - 1)
-            {
-                if (todoList[i].todoId == todoId) {
-                    todoIdBoolean = true
-                }
-            }
-            if (todoIdBoolean == false)
-            {
-                todoList.add(0,
-                    TodoInstance(
-                        todoText,
-                        contentText,
-                        hour,
-                        minute,
-//                        pendingIntent,
-//                        alarmManager,
-                        randomUUID,
-                        todoId
-                    )
-                )
-                todoDB.todoDao().insert(TodoInstance(todoText, contentText,
-                    hour, minute,
-//                    pendingIntent, alarmManager,
-                    randomUUID,
-                    todoId))
-//                makeNotification(todoText)
-                Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
-                todoAdapter.notifyDataSetChanged()
-                todoBuilder.dismiss()
-            }
-            else if(todoIdBoolean == true)
-            {
-                todoIdBoolean = false
-                todoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
-                Log.d("TAG", "todoId is ${todoId}")
-                for(i in 0 .. todoList.size - 1)
-                {
-                    if (todoList[i].todoId == todoId) {
-                        todoIdBoolean = true
-                    }
-                }
-                if(todoIdBoolean == false)
-                {
-                    todoList.add(0,
-                        TodoInstance(
-                            todoText,
-                            contentText,
-                            hour,
-                            minute,
-//                            pendingIntent,
-//                            alarmManager,
-                            randomUUID,
-                            todoId
-                        )
-                    )
-
-                    todoDB.todoDao().insert(TodoInstance(todoText, contentText, hour, minute,
-//                        pendingIntent, alarmManager,
-                        randomUUID, todoId))
-//                    makeNotification(todoText)
-                    Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
-                    todoAdapter.notifyDataSetChanged()
-                    todoBuilder.dismiss()
-                    todoIdBoolean = false
-                }
-                else if(todoIdBoolean == true)
-                {
-                    todoIdBoolean = false
-                    todoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
-                    Log.d("TAG", "todoId is ${todoId}")
-                    for(i in 0 .. todoList.size - 1)
-                    {
-                        if (todoList[i].todoId == todoId) {
-                            todoIdBoolean = true
-                        }
-                    }
-                    if(todoIdBoolean == false)
-                    {
-                        todoList.add(0,
-                            TodoInstance(
-                                todoText,
-                                contentText,
-                                hour,
-                                minute,
-//                                pendingIntent,
-//                                alarmManager,
-                                randomUUID,
-                                todoId
-                            )
-                        )
-
-                        todoDB.todoDao().insert(TodoInstance(todoText, contentText, hour, minute,
-//                            pendingIntent, alarmManager,
-                            randomUUID, todoId))
-//                        makeNotification(todoText)
-                        Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
-                        todoAdapter.notifyDataSetChanged()
-                        todoBuilder.dismiss()
-                        todoIdBoolean = false
-                    }
-                    else if(todoIdBoolean == true)
-                    {
-                        todoIdBoolean = false
-                        Toast.makeText(applicationContext, "다시 한번 시도해주세요.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
+        todoList.add(0, TodoInstance(todoText, contentText,
+            hour, minute,
+            randomUUID,
+            todoId)
+        )
+        todoDB.todoDao().insert(TodoInstance(todoText, contentText,
+            hour, minute,
+            randomUUID,
+            todoId))
+        saveTodoIdCountData()
+        Log.d("TAG", "todoDB is ${todoDB.todoDao().getAll()}")
+        Log.d("TAG", "MainActivity.todoDialogDeclaration - todoList of size : ${todoList.size}")
+        todoAdapter.notifyDataSetChanged()
+        todoBuilder.dismiss()
     }
 
     //메모아이디를 생성하는 FireStore 에 메모 데이터를 저장하는 메소드.
@@ -911,96 +847,99 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
     private fun makeMemoIdAndSaveMemoData(memoTitle: String, memoContent: String, date: String, memoPlan: String, memoBuilder: AlertDialog) {
 
         //메모 아이디 주는 것.
-        memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
+//        memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
+        memoIdCount = memoIdCount + 1
+        memoId = "$memoIdCount"
+        saveMemoIdCountData()
         Log.d("TAG", "memoId is ${memoId}")
         //만일 메모리스트가 비었다면 그냥 바로 추가하기
-        if(memoList.isEmpty())
-        {
+//        if(memoList.isEmpty())
+//        {
             memoList.add(0, MemoInstance(memoTitle, memoContent, date, "${memoPlan}", memoId)
             )
             memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
             Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
             memoAdapter.notifyDataSetChanged()
             memoBuilder.dismiss()
-        }
+//        }
         //만일 메모리스트가 비지 않았다면.
-        else if(memoList.isNotEmpty())
-        {
-            for(i in 0 .. memoList.size - 1)
-            {
-                if (memoList[i].memoId == memoId) {
-                    memoIdBoolean = true
-                }
-            }
-            if (memoIdBoolean == false)
-            {
-                memoList.add(0, MemoInstance(memoTitle, memoContent, date,"${memoPlan}", memoId)
-                )
-                memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
-                Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
-                memoAdapter.notifyDataSetChanged()
-                memoBuilder.dismiss()
-            }
-            else if(memoIdBoolean == true)
-            {
-                memoIdBoolean = false
-                memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
-                Log.d("TAG", "memoId is ${memoId}")
-                for(i in 0 .. memoList.size - 1)
-                {
-                    if (memoList[i].memoId == memoId) {
-                        memoIdBoolean = true
-                    }
-                }
-                if(memoIdBoolean == false)
-                {
-                    memoList.add(0, MemoInstance(
-                            memoTitle,
-                            memoContent,
-                            date,
-                            "${memoPlan}",
-                            memoId
-                        )
-                    )
-                    memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
-                    Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
-                    memoAdapter.notifyDataSetChanged()
-                    memoBuilder.dismiss()
-                }
-                else if(memoIdBoolean == true)
-                {
-                    memoIdBoolean = false
-                    memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
-                    Log.d("TAG", "memoId is ${memoId}")
-                    for(i in 0 .. memoList.size - 1)
-                    {
-                        if (memoList[i].memoId == memoId) {
-                            memoIdBoolean = true
-                        }
-                    }
-                    if(memoIdBoolean == false)
-                    {
-                        memoList.add(0, MemoInstance(
-                                memoTitle,
-                                memoContent,
-                                date,
-                                "${memoPlan}",
-                                memoId
-                            )
-                        )
-                        memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
-                        Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
-                        memoAdapter.notifyDataSetChanged()
-                        memoBuilder.dismiss()
-                    }
-                    else if(memoIdBoolean == true)
-                    {
-                        memoIdBoolean = false
-                        Toast.makeText(applicationContext, "다시 한번 시도해주세요.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
+//        else if(memoList.isNotEmpty())
+//        {
+//            for(i in 0 .. memoList.size - 1)
+//            {
+//                if (memoList[i].memoId == memoId) {
+//                    memoIdBoolean = true
+//                }
+//            }
+//            if (memoIdBoolean == false)
+//            {
+//                memoList.add(0, MemoInstance(memoTitle, memoContent, date,"${memoPlan}", memoId)
+//                )
+//                memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
+//                Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
+//                memoAdapter.notifyDataSetChanged()
+//                memoBuilder.dismiss()
+//            }
+//            else if(memoIdBoolean == true)
+//            {
+//                memoIdBoolean = false
+//                memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
+//                Log.d("TAG", "memoId is ${memoId}")
+//                for(i in 0 .. memoList.size - 1)
+//                {
+//                    if (memoList[i].memoId == memoId) {
+//                        memoIdBoolean = true
+//                    }
+//                }
+//                if(memoIdBoolean == false)
+//                {
+//                    memoList.add(0, MemoInstance(
+//                            memoTitle,
+//                            memoContent,
+//                            date,
+//                            "${memoPlan}",
+//                            memoId
+//                        )
+//                    )
+//                    memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
+//                    Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
+//                    memoAdapter.notifyDataSetChanged()
+//                    memoBuilder.dismiss()
+//                }
+//                else if(memoIdBoolean == true)
+//                {
+//                    memoIdBoolean = false
+//                    memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
+//                    Log.d("TAG", "memoId is ${memoId}")
+//                    for(i in 0 .. memoList.size - 1)
+//                    {
+//                        if (memoList[i].memoId == memoId) {
+//                            memoIdBoolean = true
+//                        }
+//                    }
+//                    if(memoIdBoolean == false)
+//                    {
+//                        memoList.add(0, MemoInstance(
+//                                memoTitle,
+//                                memoContent,
+//                                date,
+//                                "${memoPlan}",
+//                                memoId
+//                            )
+//                        )
+//                        memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
+//                        Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
+//                        memoAdapter.notifyDataSetChanged()
+//                        memoBuilder.dismiss()
+//                    }
+//                    else if(memoIdBoolean == true)
+//                    {
+//                        memoIdBoolean = false
+//                        Toast.makeText(applicationContext, "다시 한번 시도해주세요.", Toast.LENGTH_SHORT).show()
+//                    }
+//                }
+//            }
+//        }
     }
 
     //검색에 관련된 것들을 담아놓은 메소드.

@@ -2,6 +2,7 @@ package com.simplepro.secondtodoandmemo.adapter
 
 import android.content.Context
 import android.preference.PreferenceManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,6 +78,7 @@ class MemoRecyclerViewAdapter (private var memoList: ArrayList<MemoInstance>,
         holder.memoContentText.text = memoSearchList.get(position).memoContent
         holder.memoCalendarText.text = memoSearchList.get(position).memoCalendar
         memoPlanText(holder, position)
+        Log.d("TAG", "memoList[$position] id is ${memoSearchList[position].memoId}")
     }
 
     //역할 : 변수에 findViewById 를 하여 대입하는 것.
