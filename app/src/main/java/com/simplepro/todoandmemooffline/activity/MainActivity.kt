@@ -852,94 +852,12 @@ class MainActivity : AppCompatActivity(), TodoRecyclerViewAdapter.todoItemClickL
         memoId = "$memoIdCount"
         saveMemoIdCountData()
         Log.d("TAG", "memoId is ${memoId}")
-        //만일 메모리스트가 비었다면 그냥 바로 추가하기
-//        if(memoList.isEmpty())
-//        {
-            memoList.add(0, MemoInstance(memoTitle, memoContent, date, "${memoPlan}", memoId)
-            )
-            memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
-            Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
-            memoAdapter.notifyDataSetChanged()
-            memoBuilder.dismiss()
-//        }
-        //만일 메모리스트가 비지 않았다면.
-//        else if(memoList.isNotEmpty())
-//        {
-//            for(i in 0 .. memoList.size - 1)
-//            {
-//                if (memoList[i].memoId == memoId) {
-//                    memoIdBoolean = true
-//                }
-//            }
-//            if (memoIdBoolean == false)
-//            {
-//                memoList.add(0, MemoInstance(memoTitle, memoContent, date,"${memoPlan}", memoId)
-//                )
-//                memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
-//                Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
-//                memoAdapter.notifyDataSetChanged()
-//                memoBuilder.dismiss()
-//            }
-//            else if(memoIdBoolean == true)
-//            {
-//                memoIdBoolean = false
-//                memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
-//                Log.d("TAG", "memoId is ${memoId}")
-//                for(i in 0 .. memoList.size - 1)
-//                {
-//                    if (memoList[i].memoId == memoId) {
-//                        memoIdBoolean = true
-//                    }
-//                }
-//                if(memoIdBoolean == false)
-//                {
-//                    memoList.add(0, MemoInstance(
-//                            memoTitle,
-//                            memoContent,
-//                            date,
-//                            "${memoPlan}",
-//                            memoId
-//                        )
-//                    )
-//                    memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
-//                    Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
-//                    memoAdapter.notifyDataSetChanged()
-//                    memoBuilder.dismiss()
-//                }
-//                else if(memoIdBoolean == true)
-//                {
-//                    memoIdBoolean = false
-//                    memoId = ThreadLocalRandom.current().nextInt(1000000, 9999999).toString()
-//                    Log.d("TAG", "memoId is ${memoId}")
-//                    for(i in 0 .. memoList.size - 1)
-//                    {
-//                        if (memoList[i].memoId == memoId) {
-//                            memoIdBoolean = true
-//                        }
-//                    }
-//                    if(memoIdBoolean == false)
-//                    {
-//                        memoList.add(0, MemoInstance(
-//                                memoTitle,
-//                                memoContent,
-//                                date,
-//                                "${memoPlan}",
-//                                memoId
-//                            )
-//                        )
-//                        memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
-//                        Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
-//                        memoAdapter.notifyDataSetChanged()
-//                        memoBuilder.dismiss()
-//                    }
-//                    else if(memoIdBoolean == true)
-//                    {
-//                        memoIdBoolean = false
-//                        Toast.makeText(applicationContext, "다시 한번 시도해주세요.", Toast.LENGTH_SHORT).show()
-//                    }
-//                }
-//            }
-//        }
+        memoList.add(0, MemoInstance(memoTitle, memoContent, date, "${memoPlan}", memoId)
+        )
+        memoDB.memoDao().insert(MemoInstance(memoTitle, memoContent, date, memoPlan, memoId))
+        Log.d("TAG", "MainActivity.memoDialogDeclaration - memoList of size : ${memoList.size}")
+        memoAdapter.notifyDataSetChanged()
+        memoBuilder.dismiss()
     }
 
     //검색에 관련된 것들을 담아놓은 메소드.
